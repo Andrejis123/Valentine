@@ -37,11 +37,12 @@
             border-radius: 10px;
             border: 4px solid #4a4a4a;
             position: relative;
-            display: flex;
+            display: flex; /* Default is flex for the initial screen */
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden; 
+            overflow: hidden;
+            box-sizing: border-box; /* Important for padding in grid mode */
         }
 
         h1 {
@@ -55,6 +56,7 @@
         .pixel-cat {
             width: 150px;
             margin-bottom: 20px;
+            image-rendering: pixelated; /* Keeps pixel art crisp */
         }
 
         .buttons {
@@ -88,7 +90,7 @@
             color: #8b0000;
             transition: top 0.4s ease-out, left 0.4s ease-out;
             position: relative; 
-            z-index: 10; /* Ensures it stays on top */
+            z-index: 10;
         }
 
         .bottom-text {
@@ -99,20 +101,50 @@
             opacity: 0.8;
         }
 
+        /* ---- NEW STYLES FOR THE FINAL SCREEN ---- */
+
+        /* The container for the final screen uses CSS Grid */
         #video-container {
-            display: none;
+            display: none; /* Hidden initially */
             width: 100%;
             height: 100%;
-            flex-direction: column;
+            /* Grid Layout Definition */
+            grid-template-columns: 1fr 1fr; /* Two equal columns */
+            grid-template-rows: auto 1fr;   /* Top row for text, bottom for content */
+            grid-template-areas: 
+                "title title"
+                "cat video";
+            gap: 20px;
+            padding: 30px; /* Add some internal spacing */
+            justify-items: center;
             align-items: center;
-            justify-content: center;
         }
 
-        video {
-            width: 90%;
+        /* Style specifically for the "YAY!" text */
+        .yay-text {
+            grid-area: title;
+            font-size: 28px;
+            margin-bottom: 0;
+        }
+
+        /* Style for the new happy cat GIF */
+        .happy-cat {
+            grid-area: cat;
+            width: 100%;
+            max-width: 180px;
+            height: auto;
+            image-rendering: pixelated;
+        }
+
+        /* Style specifically for the final video */
+        .final-video {
+            grid-area: video;
+            width: 100%;
+            max-width: 220px; /* Limits size so it fits nicely in the corner */
+            height: auto;
             border: 4px solid #000;
             border-radius: 5px;
-            box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
         }
 
         .content-wrapper {
@@ -130,7 +162,6 @@
             
             <div id="initial-content" class="content-wrapper">
                 <h1>WILL YOU BE MY VALENTINE?</h1>
-                
                 <img src="https://media.giphy.com/media/L0O3TQpp0WnSXmxV8p/giphy.gif" alt="Pixel Cat" class="pixel-cat">
                 
                 <div class="buttons">
@@ -145,8 +176,11 @@
             </div>
 
             <div id="video-container">
-                <h1>YAY! ❤️</h1>
-                <video controls autoplay playsinline>
+                <h1 class="yay-text">YAY! ❤️</h1>
+                
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzhpZ2Z4ZndzeHh5ZmZ4eXh5ZmZ4eXh5ZmZ4eXh5ZmZ4eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3RnPXM/5i7umUqAOYYE/giphy.gif" alt="Happy Cat" class="happy-cat">
+                
+                <video controls autoplay playsinline class="final-video">
                     <source src="Dancing.mp4" type="video/mp4">
                     Your browser does not support video.
                 </video>
@@ -162,22 +196,16 @@
         const screenArea = document.getElementById('screen-area');
         
         let isMoving = false;
-        
-        // Track mouse position globally so the button knows where NOT to go
         let mouseX = 0;
         let mouseY = 0;
 
         document.addEventListener('mousemove', function(e) {
             mouseX = e.clientX;
             mouseY = e.clientY;
-
-            // Existing forcefield logic
             if (isMoving) return;
             const rect = noBtn.getBoundingClientRect();
             const btnCenterX = rect.left + rect.width / 2;
             const btnCenterY = rect.top + rect.height / 2;
-            
-            // Trigger escape if mouse is within 200px
             const distance = Math.sqrt(Math.pow(mouseX - btnCenterX, 2) + Math.pow(mouseY - btnCenterY, 2));
             if (distance < 200) {
                 moveButton();
@@ -192,28 +220,16 @@
         function moveButton() {
             isMoving = true;
             noBtn.style.position = 'absolute';
-
-            // Get the boundaries of the Gameboy screen
             const screenRect = screenArea.getBoundingClientRect();
-            
-            // "Smart Teleport" - Try up to 20 times to find a safe spot
             let safeX, safeY;
             let foundSafeSpot = false;
 
             for (let i = 0; i < 20; i++) {
-                // Generate random X/Y relative to the screen container
-                // 450 and 350 are safe widths to keep it inside the borders
                 const randX = Math.random() * (450 - noBtn.offsetWidth); 
                 const randY = Math.random() * (350 - noBtn.offsetHeight);
-
-                // Calculate where this new spot actually is on the page
                 const absoluteNewX = screenRect.left + randX;
                 const absoluteNewY = screenRect.top + randY;
-
-                // Measure distance from the MOUSE to this NEW candidate spot
                 const distFromMouse = Math.sqrt(Math.pow(mouseX - absoluteNewX, 2) + Math.pow(mouseY - absoluteNewY, 2));
-
-                // If the new spot is more than 250px away from the mouse, we take it!
                 if (distFromMouse > 250) {
                     safeX = randX;
                     safeY = randY;
@@ -221,26 +237,19 @@
                     break; 
                 }
             }
-
-            // If we failed to find a safe spot (rare), just pick a random corner
             if (!foundSafeSpot) {
                 safeX = Math.random() > 0.5 ? 20 : 400;
                 safeY = Math.random() > 0.5 ? 20 : 300;
             }
-
-            // Apply the new safe coordinates
             noBtn.style.left = `${safeX}px`;
             noBtn.style.top = `${safeY}px`;
-
-            // Cooldown prevents vibration
-            setTimeout(() => {
-                isMoving = false;
-            }, 500);
+            setTimeout(() => { isMoving = false; }, 500);
         }
 
         function acceptLove() {
             initialContent.style.display = 'none';
-            videoContainer.style.display = 'flex';
+            // Important: Change display to 'grid' for the final layout
+            videoContainer.style.display = 'grid'; 
         }
     </script>
 </body>
