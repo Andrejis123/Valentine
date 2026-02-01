@@ -37,12 +37,12 @@
             border-radius: 10px;
             border: 4px solid #4a4a4a;
             position: relative;
-            display: flex; /* Default is flex for the initial screen */
+            display: flex; 
             flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            box-sizing: border-box; /* Important for padding in grid mode */
+            box-sizing: border-box; 
         }
 
         h1 {
@@ -56,7 +56,7 @@
         .pixel-cat {
             width: 150px;
             margin-bottom: 20px;
-            image-rendering: pixelated; /* Keeps pixel art crisp */
+            image-rendering: pixelated; 
         }
 
         .buttons {
@@ -101,46 +101,40 @@
             opacity: 0.8;
         }
 
-        /* ---- NEW STYLES FOR THE FINAL SCREEN ---- */
-
-        /* The container for the final screen uses CSS Grid */
+        /* FINAL SCREEN LAYOUT */
         #video-container {
-            display: none; /* Hidden initially */
+            display: none; 
             width: 100%;
             height: 100%;
-            /* Grid Layout Definition */
-            grid-template-columns: 1fr 1fr; /* Two equal columns */
-            grid-template-rows: auto 1fr;   /* Top row for text, bottom for content */
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto 1fr; 
             grid-template-areas: 
                 "title title"
                 "cat video";
             gap: 20px;
-            padding: 30px; /* Add some internal spacing */
+            padding: 30px; 
             justify-items: center;
             align-items: center;
         }
 
-        /* Style specifically for the "YAY!" text */
         .yay-text {
             grid-area: title;
             font-size: 28px;
             margin-bottom: 0;
         }
 
-        /* Style for the new happy cat GIF */
         .happy-cat {
             grid-area: cat;
             width: 100%;
             max-width: 180px;
             height: auto;
-            image-rendering: pixelated;
+            /* image-rendering: pixelated; Removed this so your new GIF looks smooth */
         }
 
-        /* Style specifically for the final video */
         .final-video {
             grid-area: video;
             width: 100%;
-            max-width: 220px; /* Limits size so it fits nicely in the corner */
+            max-width: 220px; 
             height: auto;
             border: 4px solid #000;
             border-radius: 5px;
@@ -162,6 +156,7 @@
             
             <div id="initial-content" class="content-wrapper">
                 <h1>WILL YOU BE MY VALENTINE?</h1>
+                
                 <img src="https://media.giphy.com/media/L0O3TQpp0WnSXmxV8p/giphy.gif" alt="Pixel Cat" class="pixel-cat">
                 
                 <div class="buttons">
@@ -178,9 +173,9 @@
             <div id="video-container">
                 <h1 class="yay-text">YAY! ❤️</h1>
                 
-                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzhpZ2Z4ZndzeHh5ZmZ4eXh5ZmZ4eXh5ZmZ4eXh5ZmZ4eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3RnPXM/5i7umUqAOYYE/giphy.gif" alt="Happy Cat" class="happy-cat">
+                <img src="https://i.pinimg.com/originals/1c/a5/ba/1ca5ba6ee4774c4a595b2a859bc7c8e3.gif" alt="Happy Cat" class="happy-cat">
                 
-                <video controls autoplay playsinline class="final-video">
+                <video controls playsinline class="final-video" id="dancingVideo">
                     <source src="Dancing.mp4" type="video/mp4">
                     Your browser does not support video.
                 </video>
@@ -194,6 +189,7 @@
         const initialContent = document.getElementById('initial-content');
         const videoContainer = document.getElementById('video-container');
         const screenArea = document.getElementById('screen-area');
+        const video = document.getElementById('dancingVideo');
         
         let isMoving = false;
         let mouseX = 0;
@@ -248,8 +244,10 @@
 
         function acceptLove() {
             initialContent.style.display = 'none';
-            // Important: Change display to 'grid' for the final layout
             videoContainer.style.display = 'grid'; 
+            
+            // Forces video to play
+            video.play();
         }
     </script>
 </body>
