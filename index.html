@@ -16,13 +16,13 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden;
+            overflow: hidden; /* Prevents scrollbars when button moves */
         }
 
         .game-boy-frame {
             background-color: #2d2d2d;
             width: 600px;
-            height: 550px; /* Made slightly taller to fit the text */
+            height: 550px;
             border-radius: 20px;
             padding: 40px;
             box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
@@ -41,7 +41,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            /* overflow: hidden; Removed so button can escape 'outside' the screen bounds if needed, 
+               but keeping it hidden makes it feel trapped in the gameboy. Let's keep it hidden. */
+            overflow: hidden; 
         }
 
         h1 {
@@ -86,11 +88,11 @@
         #noBtn {
             background-color: #ffcccb;
             color: #8b0000;
-            transition: top 0.3s ease, left 0.3s ease;
+            /* Slower transition for a smoother "float" away */
+            transition: top 0.4s ease-out, left 0.4s ease-out;
             position: relative; 
         }
 
-        /* Styling for the Slovak text at the bottom */
         .bottom-text {
             font-size: 10px;
             color: #d32f2f;
@@ -139,14 +141,16 @@
                 </div>
 
                 <div class="bottom-text">
-                    <p>Skús stlačiť nie</p>
-                    <p>Ľúbim ťa ❤️</p>
+                    <p>skús stlačiť nie</p>
+                    <p>ľúbim ťa ❤️</p>
                 </div>
             </div>
 
             <div id="video-container">
                 <h1>YAY! ❤️</h1>
+                
                 <video controls autoplay>
+                    <source src="Dancing.mov" type="video/quicktime">
                     <source src="Dancing.mov" type="video/quicktime">
                     Your browser does not support video.
                 </video>
@@ -159,32 +163,52 @@
         const noBtn = document.getElementById('noBtn');
         const initialContent = document.getElementById('initial-content');
         const videoContainer = document.getElementById('video-container');
+        
+        // This flag stops the button from shaking
+        let isMoving = false;
 
         // FORCEFIELD LOGIC
         document.addEventListener('mousemove', function(e) {
+            // If it's already moving, don't disturb it!
+            if (isMoving) return;
+
             const rect = noBtn.getBoundingClientRect();
             const btnX = rect.left + rect.width / 2;
             const btnY = rect.top + rect.height / 2;
+            
+            // Calculate distance
             const distance = Math.sqrt(Math.pow(e.clientX - btnX, 2) + Math.pow(e.clientY - btnY, 2));
             
-            // If the mouse gets closer than 150 pixels, move the button!
-            if (distance < 150) {
+            // WIDER ZONE: If mouse is within 200px (Forcefield), trigger escape
+            if (distance < 200) {
                 moveButton();
             }
         });
 
+        // Mobile touch logic
         noBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             moveButton();
         });
 
         function moveButton() {
+            isMoving = true;
+            
             noBtn.style.position = 'absolute';
-            // Random position logic
+            
+            // Calculate random position within the screen
+            // 500 and 400 are rough bounds of the 'screen' div
             const x = Math.random() * (450 - noBtn.offsetWidth); 
             const y = Math.random() * (350 - noBtn.offsetHeight);
+            
             noBtn.style.left = `${x}px`;
             noBtn.style.top = `${y}px`;
+
+            // COOLDOWN: Wait 0.5 seconds before allowing it to move again
+            // This prevents the "vibration"
+            setTimeout(() => {
+                isMoving = false;
+            }, 500);
         }
 
         function acceptLove() {
