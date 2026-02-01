@@ -6,12 +6,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #ffc0cb; /* Pink background */
-            /* This creates the heart pattern background */
+            background-color: #ffc0cb;
             background-image: radial-gradient(#ff69b4 15%, transparent 16%), radial-gradient(#ff69b4 15%, transparent 16%);
             background-size: 60px 60px;
             background-position: 0 0, 30px 30px;
-            font-family: 'Press Start 2P', cursive; /* The retro font */
+            font-family: 'Press Start 2P', cursive;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,11 +19,10 @@
             overflow: hidden;
         }
 
-        /* The Dark Grey "Gameboy" Frame */
         .game-boy-frame {
             background-color: #2d2d2d;
             width: 600px;
-            height: 500px;
+            height: 550px; /* Made slightly taller to fit the text */
             border-radius: 20px;
             padding: 40px;
             box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
@@ -32,7 +30,6 @@
             text-align: center;
         }
 
-        /* The Screen inside the frame */
         .screen {
             background-color: #ffd1dc;
             width: 100%;
@@ -44,7 +41,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden; /* Keeps the button inside the screen */
+            overflow: hidden;
         }
 
         h1 {
@@ -55,16 +52,16 @@
             z-index: 2;
         }
 
-        /* The Cat GIF */
         .pixel-cat {
             width: 150px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .buttons {
             display: flex;
             gap: 40px;
             z-index: 2;
+            margin-bottom: 20px;
         }
 
         button {
@@ -73,7 +70,7 @@
             padding: 15px 20px;
             border: 4px solid #000;
             cursor: pointer;
-            box-shadow: 4px 4px 0px #000; /* Retro 3D shadow */
+            box-shadow: 4px 4px 0px #000;
         }
 
         button:active {
@@ -82,21 +79,28 @@
         }
 
         #yesBtn {
-            background-color: #90ee90; /* Green */
+            background-color: #90ee90;
             color: #006400;
         }
 
         #noBtn {
-            background-color: #ffcccb; /* Red */
+            background-color: #ffcccb;
             color: #8b0000;
-            /* This makes the movement smooth (Gliding) */
-            transition: top 0.4s ease, left 0.4s ease;
+            transition: top 0.3s ease, left 0.3s ease;
             position: relative; 
         }
 
-        /* The Hidden Video Section */
+        /* Styling for the Slovak text at the bottom */
+        .bottom-text {
+            font-size: 10px;
+            color: #d32f2f;
+            margin-top: 10px;
+            line-height: 1.8;
+            opacity: 0.8;
+        }
+
         #video-container {
-            display: none; /* Hidden at start */
+            display: none;
             width: 100%;
             height: 100%;
             flex-direction: column;
@@ -131,14 +135,19 @@
                 
                 <div class="buttons">
                     <button id="yesBtn" onclick="acceptLove()">YES</button>
-                    <button id="noBtn" onmouseover="moveButton()">NO</button>
+                    <button id="noBtn">NO</button>
+                </div>
+
+                <div class="bottom-text">
+                    <p>skús stlačiť nie</p>
+                    <p>ľúbim ťa ❤️</p>
                 </div>
             </div>
 
             <div id="video-container">
                 <h1>YAY! ❤️</h1>
                 <video controls autoplay>
-                    <source src="dance.mp4" type="video/mp4">
+                    <source src="Dancing.mov" type="video/quicktime">
                     Your browser does not support video.
                 </video>
             </div>
@@ -151,23 +160,36 @@
         const initialContent = document.getElementById('initial-content');
         const videoContainer = document.getElementById('video-container');
 
-        // Logic to make the NO button glide smoothly away
+        // FORCEFIELD LOGIC
+        document.addEventListener('mousemove', function(e) {
+            const rect = noBtn.getBoundingClientRect();
+            const btnX = rect.left + rect.width / 2;
+            const btnY = rect.top + rect.height / 2;
+            const distance = Math.sqrt(Math.pow(e.clientX - btnX, 2) + Math.pow(e.clientY - btnY, 2));
+            
+            // If the mouse gets closer than 150 pixels, move the button!
+            if (distance < 150) {
+                moveButton();
+            }
+        });
+
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveButton();
+        });
+
         function moveButton() {
-            // We set position to absolute so it can move freely inside the screen
             noBtn.style.position = 'absolute';
-            
-            // Calculate random positions within the screen size (500x400 approx)
-            const x = Math.random() * (500 - noBtn.offsetWidth); 
-            const y = Math.random() * (400 - noBtn.offsetHeight);
-            
+            // Random position logic
+            const x = Math.random() * (450 - noBtn.offsetWidth); 
+            const y = Math.random() * (350 - noBtn.offsetHeight);
             noBtn.style.left = `${x}px`;
             noBtn.style.top = `${y}px`;
         }
 
-        // Logic when YES is clicked
         function acceptLove() {
-            initialContent.style.display = 'none'; // Hide cat & buttons
-            videoContainer.style.display = 'flex'; // Show video
+            initialContent.style.display = 'none';
+            videoContainer.style.display = 'flex';
         }
     </script>
 </body>
