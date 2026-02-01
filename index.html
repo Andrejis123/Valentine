@@ -16,7 +16,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden; /* Prevents scrollbars when button moves */
+            overflow: hidden; 
         }
 
         .game-boy-frame {
@@ -41,8 +41,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            /* overflow: hidden; Removed so button can escape 'outside' the screen bounds if needed, 
-               but keeping it hidden makes it feel trapped in the gameboy. Let's keep it hidden. */
             overflow: hidden; 
         }
 
@@ -88,9 +86,9 @@
         #noBtn {
             background-color: #ffcccb;
             color: #8b0000;
-            /* Slower transition for a smoother "float" away */
             transition: top 0.4s ease-out, left 0.4s ease-out;
             position: relative; 
+            z-index: 10; /* Ensures it stays on top */
         }
 
         .bottom-text {
@@ -128,7 +126,7 @@
 <body>
 
     <div class="game-boy-frame">
-        <div class="screen">
+        <div class="screen" id="screen-area">
             
             <div id="initial-content" class="content-wrapper">
                 <h1>WILL YOU BE MY VALENTINE?</h1>
@@ -148,10 +146,8 @@
 
             <div id="video-container">
                 <h1>YAY! ❤️</h1>
-                
-                <video controls autoplay>
-                    <source src="dance.MOV" type="video/quicktime">
-                    <source src="dancing.mov" type="video/quicktime">
+                <video controls autoplay playsinline>
+                    <source src="Dancing.mp4" type="video/mp4">
                     Your browser does not support video.
                 </video>
             </div>
@@ -163,29 +159,31 @@
         const noBtn = document.getElementById('noBtn');
         const initialContent = document.getElementById('initial-content');
         const videoContainer = document.getElementById('video-container');
+        const screenArea = document.getElementById('screen-area');
         
-        // This flag stops the button from shaking
         let isMoving = false;
+        
+        // Track mouse position globally so the button knows where NOT to go
+        let mouseX = 0;
+        let mouseY = 0;
 
-        // FORCEFIELD LOGIC
         document.addEventListener('mousemove', function(e) {
-            // If it's already moving, don't disturb it!
-            if (isMoving) return;
+            mouseX = e.clientX;
+            mouseY = e.clientY;
 
+            // Existing forcefield logic
+            if (isMoving) return;
             const rect = noBtn.getBoundingClientRect();
-            const btnX = rect.left + rect.width / 2;
-            const btnY = rect.top + rect.height / 2;
+            const btnCenterX = rect.left + rect.width / 2;
+            const btnCenterY = rect.top + rect.height / 2;
             
-            // Calculate distance
-            const distance = Math.sqrt(Math.pow(e.clientX - btnX, 2) + Math.pow(e.clientY - btnY, 2));
-            
-            // WIDER ZONE: If mouse is within 200px (Forcefield), trigger escape
+            // Trigger escape if mouse is within 200px
+            const distance = Math.sqrt(Math.pow(mouseX - btnCenterX, 2) + Math.pow(mouseY - btnCenterY, 2));
             if (distance < 200) {
                 moveButton();
             }
         });
 
-        // Mobile touch logic
         noBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             moveButton();
@@ -193,19 +191,48 @@
 
         function moveButton() {
             isMoving = true;
-            
             noBtn.style.position = 'absolute';
-            
-            // Calculate random position within the screen
-            // 500 and 400 are rough bounds of the 'screen' div
-            const x = Math.random() * (450 - noBtn.offsetWidth); 
-            const y = Math.random() * (350 - noBtn.offsetHeight);
-            
-            noBtn.style.left = `${x}px`;
-            noBtn.style.top = `${y}px`;
 
-            // COOLDOWN: Wait 0.5 seconds before allowing it to move again
-            // This prevents the "vibration"
+            // Get the boundaries of the Gameboy screen
+            const screenRect = screenArea.getBoundingClientRect();
+            
+            // "Smart Teleport" - Try up to 20 times to find a safe spot
+            let safeX, safeY;
+            let foundSafeSpot = false;
+
+            for (let i = 0; i < 20; i++) {
+                // Generate random X/Y relative to the screen container
+                // 450 and 350 are safe widths to keep it inside the borders
+                const randX = Math.random() * (450 - noBtn.offsetWidth); 
+                const randY = Math.random() * (350 - noBtn.offsetHeight);
+
+                // Calculate where this new spot actually is on the page
+                const absoluteNewX = screenRect.left + randX;
+                const absoluteNewY = screenRect.top + randY;
+
+                // Measure distance from the MOUSE to this NEW candidate spot
+                const distFromMouse = Math.sqrt(Math.pow(mouseX - absoluteNewX, 2) + Math.pow(mouseY - absoluteNewY, 2));
+
+                // If the new spot is more than 250px away from the mouse, we take it!
+                if (distFromMouse > 250) {
+                    safeX = randX;
+                    safeY = randY;
+                    foundSafeSpot = true;
+                    break; 
+                }
+            }
+
+            // If we failed to find a safe spot (rare), just pick a random corner
+            if (!foundSafeSpot) {
+                safeX = Math.random() > 0.5 ? 20 : 400;
+                safeY = Math.random() > 0.5 ? 20 : 300;
+            }
+
+            // Apply the new safe coordinates
+            noBtn.style.left = `${safeX}px`;
+            noBtn.style.top = `${safeY}px`;
+
+            // Cooldown prevents vibration
             setTimeout(() => {
                 isMoving = false;
             }, 500);
